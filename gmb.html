@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gambling Spin Game</title>
+</head>
+<body>
+
+    <h2>Gambling Spin Game</h2>
+
+    <!-- Deposit Amount Section -->
+    <div>
+        <label for="deposit-amount">Enter Deposit Amount:</label>
+        <input type="number" id="deposit-amount" min="1" placeholder="Deposit amount">
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <!-- Betting Section (Initially hidden) -->
+    <div id="bet-section" style="display: none;">
+        <label for="bet-lines">Enter Number of Lines to Bet (1-3):</label>
+        <input type="number" id="bet-lines" min="1" max="3" placeholder="Lines">
+        <br><br>
+        <label for="bet-amount">Enter Bet Amount per Line:</label>
+        <input type="number" id="bet-amount" min="1" placeholder="Bet amount">
+        <br><br>
+        <button onclick="spin()">Spin</button>
+    </div>
+
+    <!-- Slot Machine Result -->
+    <div id="slot-machine" style="display: none;">
+        <div id="slot-1"></div>
+        <div id="slot-2"></div>
+        <div id="slot-3"></div>
+    </div>
+
+    <!-- Game Output Section -->
+    <div>
+        <p id="game-output"></p>
+    </div>
+
+    <!-- Play Again Section -->
+    <div>
+        <button id="play-again" onclick="resetGame()" style="display: none;">Play Again</button>
+    </div>
+
+    <script>
+        let depositAmt = 0;
+        let currentAmount = 0;
+
+        function startGame() {
+            depositAmt = parseFloat(document.getElementById('deposit-amount').value);
+            if (isNaN(depositAmt) || depositAmt <= 0) {
+                alert("Please enter a valid deposit amount.");
+            } else {
+                currentAmount = depositAmt;
+                document.getElementById('bet-section').style.display = 'block';
+                document.getElementById('game-output').textContent = `Current Deposit: $${currentAmount}`;
+            }
+        }
+
+        function spin() {
+            const lines = parseInt(document.getElementById('bet-lines').value);
+            const betAmt = parseFloat(document.getElementById('bet-amount').value);
+            
+            if (isNaN(lines) || lines <= 0 || lines > 3 || isNaN(betAmt) || betAmt <= 0 || betAmt * lines > currentAmount) {
+                alert("Please enter valid bet amount and number of lines.");
+                return;
+            }
+
+            const spinResult = performSpin();
+            const matches = evaluateSpin(spinResult);
+            const winnings = calculateWinnings(matches, betAmt);
+            
+            currentAmount += winnings;
+
+            document.getElementById('slot-machine').style.display = 'block';
+            document.getElementById('slot-1').textContent = spinResult[0].join(" ");
+            document.getElementById('slot-2').textContent = spinResult[1].join(" ");
+            document.getElementById('slot-3').textContent = spinResult[2].join(" ");
+            document.getElementById('game-output').textContent = `You won: $${winnings}. Total Amount: $${currentAmount}`;
+
+            document.getElementById('play-again').style.display = currentAmount > 0 ? 'block' : 'none';
+        }
+
+        function resetGame() {
+            document.getElementById('bet-section').style.display = 'block';
+            document.getElementById('slot-machine').style.display = 'none';
+            document.getElementById('bet-lines').value = '';
+            document.getElementById('bet-amount').value = '';
+            document.getElementById('play-again').style.display = 'none';
+        }
+
+        function performSpin() {
+            const emoji = ["💰", "💎"];
+            const spinned = [[], [], []];
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const index = Math.floor(Math.random() * emoji.length);
+                    spinned[j][i] = emoji[index];
+                }
+            }
+            return spinned;
+        }
+
+        function evaluateSpin(result) {
+            let sameRows = 0;
+            for (let i = 0; i < 3; i++) {
+                if (result[i][0] === result[i][1] && result[i][1] === result[i][2]) {
+                    sameRows++;
+                }
+            }
+            return sameRows;
+        }
+
+        function calculateWinnings(rowsMatched, betAmount) {
+            const multiplier = 2;
+            return multiplier * betAmount * rowsMatched;
+        }
+    </script>
+
+</body>
+</html>
